@@ -53,7 +53,7 @@ def broadcast_message(message):
     chat_id = message.chat.id
     print(type(chat_id))
     if chat_id == 697156742:  # Проверка, что команду отправляет создатель бота
-        send_broadcast('Это рассылка для всех пользователей.')
+        send_broadcast('Общий сбор ёпта')
     else:
         bot.send_message(chat_id, 'У вас нет прав на выполнение этой команды.')
 
