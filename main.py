@@ -12,6 +12,14 @@ users1 = {}
 
 
 # Функция умножения матрицы на число
+def product_matrix(A,B,n1,m1,n2,m2):
+    c=[[0 for i in range(m2)] for i in range(n1)]
+    for i in range(n1):
+        for j in range(m2):
+            for k in range(m1):
+                c[i][j]+=(A[i][k]*B[k][j])
+    return c
+
 def matrix_product_number(chat_id):
     A=users1[chat_id]['A']
     x=float(users1[chat_id]['What_number_product'])
