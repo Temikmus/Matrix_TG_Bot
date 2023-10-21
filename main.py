@@ -65,7 +65,6 @@ def send_broadcast(message):
     for i in f:
         username, chat_id = i.split(':')[0], int(i.split(':')[1])
         bot.send_message(chat_id, f"{message}")
-        # добавить удаление лишней строки!!!
     f.close()
 
 
@@ -91,15 +90,25 @@ def answers_message(message):
 
 
 
-
+user=[]
 # Обработчик команды /start
 @bot.message_handler(commands=['start'])
 def start_message(message):
     chat_id = message.chat.id
     username = message.from_user.username
-    f = open("data.txt", 'a')
-    f.write(f'{username}:{chat_id}\n')
-    f.close()
+    if chat_id not in user:
+        f = open("data.txt", 'r+')
+        i=f.readline()
+        while i!='\n' and i!='':
+            i = int(i.split(":")[1])
+            if i==chat_id:
+                break
+            else:
+                user.append(i)
+                i=f.readline()
+        else:
+            f.write(f'{username}:{chat_id}\n')
+        f.close()
     users1[chat_id] = {'username': username,'lines_in_A': None, 'lines_in_B':None,'column_in_A':None,'column_in_B':None, 'What_number_product':None, 'A':None, 'B': None, 'goal': None ,'state':'idle'}
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     button1 = types.KeyboardButton("Работа с матрицами")
