@@ -10,6 +10,32 @@ f.close()
 # Cписок всех пользователей, которые взаимодействовали с ботом
 users1 = {}
 
+# Функция по нахождению обратной матрицы
+def reverse_matrix(a, n1, m1,det, chat_id):
+    c=[[0 for i in range(m1)] for j in range(n1)]
+    for i in range(n1):
+        for j in range(m1):
+            alg = (-1)**(i+j)
+            b = []
+            for line in range(n1):
+                for column in range(m1):
+                    if line != i and column != j:
+                        b.append(a[line][column])
+            B = [[0 for i in range(m1 - 1)] for j in range(n1 - 1)]
+            ind = 0
+            for line in range(n1-1):
+                for column in range(m1-1):
+                    B[line][column] = b[ind]
+                    ind += 1
+            alg *= determinant(B,n1-1,m1-1)
+            c[i][j] = alg
+    trans = transpose_matrix(c)
+    number = 1/det
+    users1[chat_id]['A']=trans
+    users1[chat_id]['What_number_product']=number
+    users1[chat_id]['lines_in_A']=len(trans)
+    users1[chat_id]['columns_in_A'] = len(trans[0])
+    matrix_product_number(chat_id)
 
 # Функция для транспонирования матрицы
 def transpose_matrix(matrix):
@@ -234,6 +260,15 @@ def message_from_user(message):
                     users1[chat_id]['state'] = 'waiting_for_matrix_A'
                     bot.send_message(chat_id, 'Введите матрицу:')
                     bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
+            elif goal == 'reversed_matrix':
+                if n!=m:
+                    bot.send_message(chat_id, "Обратная матрица не существует.\nПримечание: ее можно найти только у квадратных матриц.")
+                    users1[chat_id]['state']='idle'
+                else:
+                    users1[chat_id]['state'] = 'waiting_for_matrix_A'
+                    bot.send_message(chat_id, 'Введите матрицу:')
+                    bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
+
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
     elif state == 'waiting_for_matrix_A' or state == 'waiting_for_matrix_B':
@@ -253,6 +288,12 @@ def message_from_user(message):
                     if users1[chat_id]['goal'] == 'matrix_product_number':
                         users1[chat_id]['state'] = 'waiting_for_number'
                         bot.send_message(chat_id, 'Введите число, на которое хотите умножить матрицу:')
+                    elif users1[chat_id]['goal'] == 'reversed_matrix':
+                        det = determinant(users1[chat_id]['A'],users1[chat_id]['lines_in_A'],users1[chat_id]['columns_in_A'])
+                        if det !=0:
+                            reverse_matrix(users1[chat_id]['A'], users1[chat_id]['lines_in_A'],users1[chat_id]['columns_in_A'], det, chat_id)
+                        else:
+                            bot.send_message(chat_id, 'Обратной матрицы не существует.\nПримечание: ее можно найти если определитель матрицы не равен нулю')
                     elif users1[chat_id]['goal'] == 'determinant':
                         users1[chat_id]['state'] = 'idle'
                         det=determinant(A,n,m)
@@ -412,6 +453,17 @@ def callback_inline(call):
             else:
                 users1[chat_id]['state'] = 'waiting_for_number_lines_A'
                 users1[chat_id]['goal'] = 'trans'
+            bot.send_message(chat_id, 'Введите число строк матрицы:')
+        elif "button6" in call.data:
+            chat_id = int(call.data.split(':')[1])
+            if chat_id not in users1:
+                users1[chat_id] = {'username': None, 'lines_in_A': None, 'lines_in_B': None, 'columns_in_A': None,
+                                   'columns_in_B': None, 'What_number_product': None, 'A': None, 'B': None,
+                                   'goal': 'reversed_matrix',
+                                   'state': 'waiting_for_number_lines_A'}
+            else:
+                users1[chat_id]['state'] = 'waiting_for_number_lines_A'
+                users1[chat_id]['goal'] = 'reversed_matrix'
             bot.send_message(chat_id, 'Введите число строк матрицы:')
 
 

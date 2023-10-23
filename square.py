@@ -1,7 +1,6 @@
 import numpy as np
 def transpose_matrix(matrix):
     transposed_matrix = [[row[i] for row in matrix] for i in range(len(matrix[0]))]
-    for row in transposed_matrix:
 
 def reverse_matrix(a, n1, m1):
     c=[[0 for i in range(m1)] for j in range(n1)]
