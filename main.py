@@ -11,6 +11,12 @@ f.close()
 users1 = {}
 
 
+# Функция для транспонирования матрицы
+def transpose_matrix(matrix):
+    transposed_matrix = [[row[i] for row in matrix] for i in range(len(matrix[0]))]
+    return transposed_matrix
+
+
 # Функция перемножения матриц
 def product_matrix(A,B,n1,m1,n2,m2,chat_id):
     c=[[0 for i in range(m2)] for i in range(n1)]
@@ -199,11 +205,11 @@ def message_from_user(message):
         try:
             n = int(message.text)
             users1[chat_id]['lines_in_A'] = n
-            users1[chat_id]['state'] = 'waiting_for_number_column_A'
+            users1[chat_id]['state'] = 'waiting_for_number_columns_A'
             bot.send_message(chat_id, 'Введите число столбцов матрицы:')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
-    elif state == 'waiting_for_number_column_A':
+    elif state == 'waiting_for_number_columns_A':
         try:
             m = int(message.text)
             n=users1[chat_id]['lines_in_A']
@@ -216,7 +222,7 @@ def message_from_user(message):
                     users1[chat_id]['state'] = 'waiting_for_matrix_A'
                     bot.send_message(chat_id, 'Введите матрицу:')
                     bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
-            elif goal=='matrix_product_number' or goal=='product_matrix':
+            elif goal=='matrix_product_number' or goal=='product_matrix' or goal == 'trans':
                 users1[chat_id]['state']='waiting_for_matrix_A'
                 bot.send_message(chat_id, 'Введите матрицу:')
                 bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
@@ -269,6 +275,30 @@ def message_from_user(message):
                     elif users1[chat_id]['goal'] == 'square_matrix':
                         users1[chat_id]['state'] = 'idle'
                         product_matrix(A,A,n,m,n,m,chat_id)
+                    elif users1[chat_id]['goal'] == 'trans':
+                        users1[chat_id]['state'] = 'idle'
+                        trans=transpose_matrix(users1[chat_id]['A'])
+                        for row in range(len(trans)):
+                            s = ' '.join(map(str, trans[row]))
+                            bot.send_message(chat_id, s)
+                        markup = types.InlineKeyboardMarkup(row_width=1)
+                        button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
+                        button2 = types.InlineKeyboardButton(text="Умножить на число",
+                                                             callback_data=f'button2:{chat_id}')
+                        button3 = types.InlineKeyboardButton(text="Найти определитель",
+                                                             callback_data=f'button3:{chat_id}')
+                        button4 = types.InlineKeyboardButton(text="Возвести в квадрат",
+                                                             callback_data=f'button4:{chat_id}')
+                        button5 = types.InlineKeyboardButton(text="Найти ранг", callback_data=f'button5:{chat_id}')
+                        button6 = types.InlineKeyboardButton(text="Обратная матрица",
+                                                             callback_data=f'button6:{chat_id}')
+                        button7 = types.InlineKeyboardButton(text="Сумма/разность матриц",
+                                                             callback_data=f'button7:{chat_id}')
+                        button8 = types.InlineKeyboardButton(text="Произведение матриц",
+                                                             callback_data=f'button8:{chat_id}')
+                        markup.add(button1, button8, button7, button6, button5, button4, button3, button2)
+                        bot.send_message(chat_id, "Выберите дальнейшее действие", reply_markup=markup)
+
                 else:
                     bot.send_message(chat_id, 'Неправильный формат данных. Попробуйте ещё раз.')
                     bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\n Если у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
@@ -371,6 +401,17 @@ def callback_inline(call):
             else:
                 users1[chat_id]['state'] = 'waiting_for_number_lines_A'
                 users1[chat_id]['goal'] = 'square_matrix'
+            bot.send_message(chat_id, 'Введите число строк матрицы:')
+        elif "button1" in call.data:
+            chat_id = int(call.data.split(':')[1])
+            if chat_id not in users1:
+                users1[chat_id] = {'username': None, 'lines_in_A': None, 'lines_in_B': None, 'columns_in_A': None,
+                                   'columns_in_B': None, 'What_number_product': None, 'A': None, 'B': None,
+                                   'goal': 'trans',
+                                   'state': 'waiting_for_number_lines_A'}
+            else:
+                users1[chat_id]['state'] = 'waiting_for_number_lines_A'
+                users1[chat_id]['goal'] = 'trans'
             bot.send_message(chat_id, 'Введите число строк матрицы:')
 
 
