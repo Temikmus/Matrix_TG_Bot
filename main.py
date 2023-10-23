@@ -10,6 +10,13 @@ f.close()
 # Cписок всех пользователей, которые взаимодействовали с ботом
 users1 = {}
 
+# Функция сложеня матриц
+def sum_matrix(A, B, n1, m1, n2, m2):
+    c = [[0 for i in range(m1)] for j in range(n1)]
+    for i in range(n1):
+        for j in range(m1):
+            c[i][j] = A[i][j] + B[i][j]
+
 
 # Функция перемножения матриц
 def product_matrix(A,B,n1,m1,n2,m2,chat_id):
