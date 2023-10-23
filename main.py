@@ -215,11 +215,19 @@ def message_from_user(message):
                 else:
                     users1[chat_id]['state'] = 'waiting_for_matrix_A'
                     bot.send_message(chat_id, 'Введите матрицу:')
-                    bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\n Если у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
+                    bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
             elif goal=='matrix_product_number' or goal=='product_matrix':
                 users1[chat_id]['state']='waiting_for_matrix_A'
                 bot.send_message(chat_id, 'Введите матрицу:')
-                bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\n Если у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
+                bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
+            elif goal == 'square_matrix':
+                if n!=m:
+                    bot.send_message(chat_id, "Возвести в квадрат данную матрицу нельзя, так как кол-во строк не равно кол-ву столбцов.")
+                    users1[chat_id]['state'] = 'idle'
+                else:
+                    users1[chat_id]['state'] = 'waiting_for_matrix_A'
+                    bot.send_message(chat_id, 'Введите матрицу:')
+                    bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
     elif state == 'waiting_for_matrix_A' or state == 'waiting_for_matrix_B':
@@ -258,6 +266,9 @@ def message_from_user(message):
                     elif users1[chat_id]['goal'] == 'product_matrix':
                         users1[chat_id]['state'] = 'waiting_for_number_lines_B'
                         bot.send_message(chat_id, 'Введите число строк матрицы, на которую хотите умножить:')
+                    elif users1[chat_id]['goal'] == 'square_matrix':
+                        users1[chat_id]['state'] = 'idle'
+                        product_matrix(A,A,n,m,n,m,chat_id)
                 else:
                     bot.send_message(chat_id, 'Неправильный формат данных. Попробуйте ещё раз.')
                     bot.send_message(chat_id, 'Обязательно посмотрите, как нужно вводить данные\n Если у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.')
@@ -350,6 +361,17 @@ def callback_inline(call):
                 users1[chat_id]['state'] = 'waiting_for_number_lines_A'
                 users1[chat_id]['goal'] = 'product_matrix'
             bot.send_message(chat_id, 'Введите число строк матрицы:\n Если у вас умножение матриц A*B,\n то введите число строк матрицы A')
+        elif "button4" in call.data:
+            chat_id = int(call.data.split(':')[1])
+            if chat_id not in users1:
+                users1[chat_id] = {'username': None, 'lines_in_A': None, 'lines_in_B': None, 'columns_in_A': None,
+                                   'columns_in_B': None, 'What_number_product': None, 'A': None, 'B': None,
+                                   'goal': 'square_matrix',
+                                   'state': 'waiting_for_number_lines_A'}
+            else:
+                users1[chat_id]['state'] = 'waiting_for_number_lines_A'
+                users1[chat_id]['goal'] = 'square_matrix'
+            bot.send_message(chat_id, 'Введите число строк матрицы:')
 
 
 # Запуск бота
