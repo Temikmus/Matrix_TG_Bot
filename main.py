@@ -12,11 +12,41 @@ f.close()
 users1 = {}
 
 # Функция сложеня матриц
-def sum_matrix(A, B, n1, m1, n2, m2):
+def sum_matrix(A, B, n1, m1, n2, m2,chat_id):
     c = [[0 for i in range(m1)] for j in range(n1)]
+    sign = users1[chat_id]['sign']
+    if sign=='-':
+        new_b = [[0 for i in range(m2)] for j in range(n2)]
+        for i in range(n2):
+            for j in range(m2):
+                new_b[i][j]=-B[i][j]
+        B=new_b
     for i in range(n1):
         for j in range(m1):
             c[i][j] = A[i][j] + B[i][j]
+    s = '  '
+    for i in range(n1):
+        for j in range(len(c[i])):
+            if j == 0:
+                s += '{:.3f}'.format(c[i][j])
+            else:
+                s += '{:7.3f}'.format(c[i][j])
+            if j != (len(c[i]) - 1):
+                s += '  '
+        s += '\n'
+    s = f'<b>{s}</b>'
+    bot.send_message(chat_id, s, parse_mode='HTML')
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
+    button2 = types.InlineKeyboardButton(text="Умножить на число", callback_data=f'button2:{chat_id}')
+    button3 = types.InlineKeyboardButton(text="Найти определитель", callback_data=f'button3:{chat_id}')
+    button4 = types.InlineKeyboardButton(text="Возвести в квадрат", callback_data=f'button4:{chat_id}')
+    button5 = types.InlineKeyboardButton(text="Найти ранг", callback_data=f'button5:{chat_id}')
+    button6 = types.InlineKeyboardButton(text="Обратная матрица", callback_data=f'button6:{chat_id}')
+    button7 = types.InlineKeyboardButton(text="Сумма/разность матриц", callback_data=f'button7:{chat_id}')
+    button8 = types.InlineKeyboardButton(text="Произведение матриц", callback_data=f'button8:{chat_id}')
+    markup.add(button1, button8, button7, button6, button5, button4, button3, button2)
+    bot.send_message(chat_id, "Выберите дальнейшее действие", reply_markup=markup)
 
 
 # Функция по нахождению обратной матрицы
@@ -294,7 +324,7 @@ def message_from_user(message):
                     bot.send_message(chat_id,
                                      '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
                                      parse_mode='HTML')
-            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans':
+            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans' or goal == 'sum_matrix':
                 users1[chat_id]['state'] = 'waiting_for_matrix_A'
                 bot.send_message(chat_id, 'Введите матрицу:')
                 bot.send_message(chat_id,
@@ -381,6 +411,10 @@ def message_from_user(message):
                         users1[chat_id]['state'] = 'waiting_for_number_lines_B'
                         bot.send_message(chat_id, 'Введите число <b>строк</b> матрицы, на которую хотите умножить:',
                                          parse_mode='HTML')
+                    elif users1[chat_id]['goal'] == 'sum_matrix':
+                        users1[chat_id]['state'] = 'waiting_for_number_lines_B'
+                        bot.send_message(chat_id, 'Введите число <b>строк</b> второй матрицы:',
+                                         parse_mode='HTML')
                     elif users1[chat_id]['goal'] == 'square_matrix':
                         users1[chat_id]['state'] = 'idle'
                         product_matrix(A, A, n, m, n, m, chat_id)
@@ -437,6 +471,9 @@ def message_from_user(message):
                         product_matrix(users1[chat_id]['A'], users1[chat_id]['B'], users1[chat_id]['lines_in_A'],
                                        users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
                                        users1[chat_id]['columns_in_B'], chat_id)
+                    elif users1[chat_id]['goal'] == 'sum_matrix':
+                        users1[chat_id]['state'] = 'sign'
+                        bot.send_message(chat_id, 'Введите действие, которое хотите выполнить: <b>+</b> или <b>-</b>', parse_mode='HTML')
                 else:
                     bot.send_message(chat_id, 'Неправильный формат данных. Попробуйте ещё раз.')
                     bot.send_message(chat_id,
@@ -458,25 +495,64 @@ def message_from_user(message):
             users1[chat_id]['lines_in_B'] = n2
             users1[chat_id]['state'] = 'waiting_for_number_columns_B'
             m1 = users1[chat_id]['columns_in_A']
-            if n2 != m1:
-                bot.send_message(chat_id,
-                                 'Перемножение этих матриц <b>невозможно</b>.\nПримечание: чтобы умножить матрицы A*B\nкол-во столбцов матрицы A должно быть равно кол-ву строк матрицы B',
-                                 parse_mode='HTML')
-                users1[chat_id]['state'] = 'idle'
-            else:
-                bot.send_message(chat_id, 'Введите число <b>столбцов</b> этой матрицы:', parse_mode='HTML')
+            if users1[chat_id]['goal'] == 'product_matrix':
+                if n2 != m1:
+                    bot.send_message(chat_id,
+                                     'Перемножение этих матриц <b>невозможно</b>.\nПримечание: чтобы умножить матрицы A*B\nкол-во столбцов матрицы A должно быть равно кол-ву строк матрицы B',
+                                     parse_mode='HTML')
+                    users1[chat_id]['state'] = 'idle'
+                else:
+                    bot.send_message(chat_id, 'Введите число <b>столбцов</b> этой матрицы:', parse_mode='HTML')
+            elif users1[chat_id]['goal'] == 'sum_matrix':
+                if n2!=users1[chat_id]['lines_in_A']:
+                    bot.send_message(chat_id,
+                                     'Выполнить действие с этими матрицами <b>невозможно</b>.\nПримечание: размерности матриц должны быть одинаковыми',
+                                     parse_mode='HTML')
+                    users1[chat_id]['state'] = 'idle'
+                else:
+                    bot.send_message(chat_id, 'Введите число <b>столбцов</b> этой матрицы:', parse_mode='HTML')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
     elif state == 'waiting_for_number_columns_B':
         try:
             m2 = int(message.text)
             users1[chat_id]['columns_in_B'] = m2
+            users1[chat_id]['state'] = 'waiting_for_matrix_B'
             if goal == 'product_matrix':
-                users1[chat_id]['state'] = 'waiting_for_matrix_B'
                 bot.send_message(chat_id, 'Введите матрицу:')
                 bot.send_message(chat_id,
                                  '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
                                  parse_mode='HTML')
+            elif goal=='sum_matrix':
+                if users1[chat_id]['columns_in_A']!=m2:
+                    bot.send_message(chat_id,
+                                     'Выполнить действие с этими матрицами <b>невозможно</b>.\nПримечание: размерности матриц должны быть одинаковыми',
+                                     parse_mode='HTML')
+                    users1[chat_id]['state'] = 'idle'
+                else:
+                    bot.send_message(chat_id, 'Введите матрицу:')
+                    bot.send_message(chat_id,
+                                     '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
+                                     parse_mode='HTML')
+        except ValueError:
+            bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
+    elif state=='sign':
+        try:
+            sign=message.text
+            if sign=='+':
+                users1[chat_id]['sign'] = '+'
+                sum_matrix(users1[chat_id]['A'], users1[chat_id]['B'], users1[chat_id]['lines_in_A'],
+                               users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
+                               users1[chat_id]['columns_in_B'], chat_id)
+                users1[chat_id]['state']='idle'
+            elif sign=='-':
+                users1[chat_id]['sign'] = '-'
+                sum_matrix(users1[chat_id]['A'], users1[chat_id]['B'], users1[chat_id]['lines_in_A'],
+                           users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
+                           users1[chat_id]['columns_in_B'], chat_id)
+                users1[chat_id]['state'] = 'idle'
+            else:
+                bot.send_message(chat_id, 'Неправильный формат. Введите <b>+</b> или <b>-</b>', parse_mode='HTML')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
 
@@ -552,6 +628,17 @@ def callback_inline(call):
             else:
                 users1[chat_id]['state'] = 'waiting_for_number_lines_A'
                 users1[chat_id]['goal'] = 'reversed_matrix'
+            bot.send_message(chat_id, 'Введите число <b>строк</b> матрицы:', parse_mode='HTML')
+        elif "button7" in call.data:
+            chat_id = int(call.data.split(':')[1])
+            if chat_id not in users1:
+                users1[chat_id] = {'username': None, 'lines_in_A': None, 'lines_in_B': None, 'columns_in_A': None,
+                                   'columns_in_B': None, 'What_number_product': None, 'A': None, 'B': None,
+                                   'goal': 'sum_matrix',
+                                   'state': 'waiting_for_number_lines_A'}
+            else:
+                users1[chat_id]['state'] = 'waiting_for_number_lines_A'
+                users1[chat_id]['goal'] = 'sum_matrix'
             bot.send_message(chat_id, 'Введите число <b>строк</b> матрицы:', parse_mode='HTML')
 
 
