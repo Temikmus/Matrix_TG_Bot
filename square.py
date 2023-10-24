@@ -1,13 +1,31 @@
 import numpy as np
-import random
+def transpose_matrix(matrix):
+    transposed_matrix = [[row[i] for row in matrix] for i in range(len(matrix[0]))]
 
-def product_matrix(A,B,n1,m1,n2,m2):
-    c=[[0 for i in range(m2)] for i in range(n1)]
+def reverse_matrix(a, n1, m1):
+    c=[[0 for i in range(m1)] for j in range(n1)]
     for i in range(n1):
-        for j in range(m2):
-            for k in range(m1):
-                c[i][j]+=(A[i][k]*B[k][j])
-    return c
+        for j in range(m1):
+            alg = (-1)**(i+j)
+            b = []
+            for line in range(n1):
+                for column in range(m1):
+                    if line != i and column != j:
+                        b.append(a[line][column])
+            B = [[0 for i in range(m1 - 1)] for j in range(n1 - 1)]
+            ind = 0
+            for line in range(n1-1):
+                for column in range(m1-1):
+                    B[line][column] = b[ind]
+                    ind += 1
+            alg *= np.linalg.det(B)
+            c[i][j] = alg
+    print(c)
+    trans = transpose_matrix(c)
+    print(trans)
+
+reverse_matrix([[1,2,3],[4,5,6],[7,9,9]],3,3)
+
 
 
 
