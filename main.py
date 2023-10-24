@@ -9,6 +9,7 @@ s = f.readline()
 bot = telebot.TeleBot(str(s))
 f.close()
 
+
 # Cписок всех пользователей, которые взаимодействовали с ботом
 users1 = {}
 
@@ -247,7 +248,10 @@ def send_broadcast(message):
 def broadcast_message(message):
     chat_id = message.chat.id
     if chat_id == 697156742:  # Проверка, что команду отправляет создатель бота
-        send_broadcast('Это расслыка для всех пользователей')
+        f=open('broadcast.txt', encoding='utf-8')
+        s=f.readline()
+        f.close()
+        send_broadcast(s)
     else:
         bot.send_message(chat_id, 'У вас нет прав на выполнение этой команды.')
 
@@ -339,6 +343,10 @@ def message_from_user(message):
         button3 = types.KeyboardButton("Вернуться в главное меню")
         markup.add(button1).row(button2, button3)
         bot.send_message(message.chat.id, 'Что конкретно вас интересует?', reply_markup=markup)
+    elif (message.text=="Что я умею?"):
+        bot.send_message(message.chat.id, 'Привет! Я <b>Matrix_assistant</b> бот и я помогу тебе быстро работать с матрицами. Я могу:\nТранспонировать матрицу\nНайти произведение двух матриц\nНайти сумму двух матриц\nНайти разность двух матриц\nНайти обратную матрицу\nНайти ранг матрицы\nВозвести матрицу в квадрат\nНайти определитель матрицы\nУмножить матрицу на число\nНачнем?', parse_mode='HTML')
+    elif (message.text == "Создатели"):
+        bot.send_message(message.chat.id, 'Telegram-bot создали <b>Муслин Артемий</b>, <b>Яшина Нина</b>, <b>Калетурина Полина</b> и <b>Гарин Андрей</b>.\nПроектная работа от 25.10.23', parse_mode='HTML')
     elif (message.text == "Вернуться в главное меню"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
         button1 = types.KeyboardButton("Работа с матрицами")
