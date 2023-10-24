@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import telebot
 from telebot import types
+from itertools import permutations
 
 # Инициализация бота с токеном
 f = open("access_to_bot.txt")
@@ -10,6 +11,64 @@ f.close()
 
 # Cписок всех пользователей, которые взаимодействовали с ботом
 users1 = {}
+
+# Функция нахождения ранга матрицы
+def rank(a,n1,m1):
+    max_rank=min(n1,m1)
+    klu=0
+    key=1
+    tek_rank=2
+    rank=0
+    bazed_lines=[]
+    bazed_columns=[]
+    for i in range(n1):
+        if klu==1:
+            break
+        for j in range(m1):
+            if a[i][j]!=0:
+                bazed_lines.append(i)
+                bazed_columns.append(j)
+                rank=1
+                klu=1
+                break
+    if klu==0:
+        return 0
+    else:
+        while key:
+            if tek_rank>max_rank:
+                break
+            b=[]
+            k=0
+            new_matrix=[[0 for i in range(tek_rank)] for j in range(tek_rank)]
+            key=0
+            tek_lines=(permutations(range(n1), tek_rank))
+            tek_columns=(permutations(range(m1),tek_rank))
+            bas_tek_lines=[i for i in tek_lines if all(bazed_lines) in i]
+            bas_tek_columns=[i for i in tek_columns if all(bazed_columns) in i]
+            for i in bas_tek_lines:
+                if key==1:
+                    break
+                for j in bas_tek_columns:
+                    if key==1:
+                        break
+                    for line in sorted(list(i)):
+                        if key==1:
+                            break
+                        for column in sorted(list(j)):
+                            if key==1:
+                                break
+                            b.append(a[line][column])
+                    for x in range(tek_rank):
+                        for y in range(tek_rank):
+                            new_matrix[x][y]=b[k]
+                            k+=1
+                    if determinant(new_matrix,tek_rank,tek_rank)!=0:
+                        key=1
+                        tek_rank+=1
+                        rank+=1
+                        break
+    return rank
+
 
 # Функция сложеня матриц
 def sum_matrix(A, B, n1, m1, n2, m2,chat_id):
@@ -324,7 +383,7 @@ def message_from_user(message):
                     bot.send_message(chat_id,
                                      '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
                                      parse_mode='HTML')
-            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans' or goal == 'sum_matrix':
+            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans' or goal == 'sum_matrix' or goal=='rank':
                 users1[chat_id]['state'] = 'waiting_for_matrix_A'
                 bot.send_message(chat_id, 'Введите матрицу:')
                 bot.send_message(chat_id,
@@ -385,6 +444,27 @@ def message_from_user(message):
                             bot.send_message(chat_id,
                                              'Обратной матрицы <b>не существует</b>.\nПримечание: ее можно найти если определитель матрицы не равен нулю',
                                              parse_mode='HTML')
+                    elif users1[chat_id]['goal']=='rank':
+                        r = rank(users1[chat_id]['A'], users1[chat_id]['lines_in_A'], users1[chat_id]['columns_in_A'])
+                        users1[chat_id]['state']='idle'
+                        bot.send_message(chat_id, f'Ранг данной матрицы равен: <b>{r}</b>', parse_mode='HTML')
+                        markup = types.InlineKeyboardMarkup(row_width=1)
+                        button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
+                        button2 = types.InlineKeyboardButton(text="Умножить на число",
+                                                             callback_data=f'button2:{chat_id}')
+                        button3 = types.InlineKeyboardButton(text="Найти определитель",
+                                                             callback_data=f'button3:{chat_id}')
+                        button4 = types.InlineKeyboardButton(text="Возвести в квадрат",
+                                                             callback_data=f'button4:{chat_id}')
+                        button5 = types.InlineKeyboardButton(text="Найти ранг", callback_data=f'button5:{chat_id}')
+                        button6 = types.InlineKeyboardButton(text="Обратная матрица",
+                                                             callback_data=f'button6:{chat_id}')
+                        button7 = types.InlineKeyboardButton(text="Сумма/разность матриц",
+                                                             callback_data=f'button7:{chat_id}')
+                        button8 = types.InlineKeyboardButton(text="Произведение матриц",
+                                                             callback_data=f'button8:{chat_id}')
+                        markup.add(button1, button8, button7, button6, button5, button4, button3, button2)
+                        bot.send_message(chat_id, "Выберите дальнейшее действие", reply_markup=markup)
                     elif users1[chat_id]['goal'] == 'determinant':
                         users1[chat_id]['state'] = 'idle'
                         det = determinant(A, n, m)
@@ -639,6 +719,17 @@ def callback_inline(call):
             else:
                 users1[chat_id]['state'] = 'waiting_for_number_lines_A'
                 users1[chat_id]['goal'] = 'sum_matrix'
+            bot.send_message(chat_id, 'Введите число <b>строк</b> матрицы:', parse_mode='HTML')
+        elif "button5" in call.data:
+            chat_id = int(call.data.split(':')[1])
+            if chat_id not in users1:
+                users1[chat_id] = {'username': None, 'lines_in_A': None, 'lines_in_B': None, 'columns_in_A': None,
+                                   'columns_in_B': None, 'What_number_product': None, 'A': None, 'B': None,
+                                   'goal': 'rank',
+                                   'state': 'waiting_for_number_lines_A'}
+            else:
+                users1[chat_id]['state'] = 'waiting_for_number_lines_A'
+                users1[chat_id]['goal'] = 'rank'
             bot.send_message(chat_id, 'Введите число <b>строк</b> матрицы:', parse_mode='HTML')
 
 

@@ -1,31 +1,8 @@
-import numpy as np
-def transpose_matrix(matrix):
-    transposed_matrix = [[row[i] for row in matrix] for i in range(len(matrix[0]))]
-
-def reverse_matrix(a, n1, m1):
-    c=[[0 for i in range(m1)] for j in range(n1)]
-    for i in range(n1):
-        for j in range(m1):
-            alg = (-1)**(i+j)
-            b = []
-            for line in range(n1):
-                for column in range(m1):
-                    if line != i and column != j:
-                        b.append(a[line][column])
-            B = [[0 for i in range(m1 - 1)] for j in range(n1 - 1)]
-            ind = 0
-            for line in range(n1-1):
-                for column in range(m1-1):
-                    B[line][column] = b[ind]
-                    ind += 1
-            alg *= np.linalg.det(B)
-            c[i][j] = alg
-    print(c)
-    trans = transpose_matrix(c)
-    print(trans)
-
-reverse_matrix([[1,2,3],[4,5,6],[7,9,9]],3,3)
-
+tek_lines=[(1,0),(1,1)]
+baz=[0]
+new=[i for i in tek_lines if all(baz) in i].sort(key=lambda: x[i] for i in range(len(x)))
+print(new)
+print(1 in (1,0))
 
 
 
