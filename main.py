@@ -643,6 +643,14 @@ def message_from_user(message):
                 bot.send_message(chat_id, 'Неправильный формат. Введите <b>+</b> или <b>-</b>', parse_mode='HTML')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
+    else:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+        button1 = types.KeyboardButton("Работа с матрицами")
+        button2 = types.KeyboardButton("Информация о боте")
+        button3 = types.KeyboardButton("Написать в поддержку")
+        markup.add(button1).row(button2, button3)
+        bot.send_message(chat_id, f'Простите, я не понимаю вас. Пожалуйста выберите дальнейшее действие:',
+                         reply_markup=markup, parse_mode='HTML')
 
 
 # Обработка кнопок, связанных с работой с матрицами
@@ -742,4 +750,4 @@ def callback_inline(call):
 
 
 # Запуск бота
-bot.polling(none_stop=True)
+bot.polling(none_stop=True, timeout=60)
