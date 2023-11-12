@@ -2,6 +2,7 @@
 import telebot
 from telebot import types
 from itertools import permutations
+import time
 
 # Инициализация бота с токеном
 f = open("access_to_bot.txt")
@@ -9,78 +10,78 @@ s = f.readline()
 bot = telebot.TeleBot(str(s))
 f.close()
 
-
 # Cписок всех пользователей, которые взаимодействовали с ботом
 users1 = {}
 
+
 # Функция нахождения ранга матрицы
-def rank(a,n1,m1):
-    max_rank=min(n1,m1)
-    klu=0
-    key=1
-    tek_rank=2
-    rank=0
-    bazed_lines=[]
-    bazed_columns=[]
+def rank(a, n1, m1):
+    max_rank = min(n1, m1)
+    klu = 0
+    key = 1
+    tek_rank = 2
+    rank = 0
+    bazed_lines = []
+    bazed_columns = []
     for i in range(n1):
-        if klu==1:
+        if klu == 1:
             break
         for j in range(m1):
-            if a[i][j]!=0:
+            if a[i][j] != 0:
                 bazed_lines.append(i)
                 bazed_columns.append(j)
-                rank=1
-                klu=1
+                rank = 1
+                klu = 1
                 break
-    if klu==0:
+    if klu == 0:
         return 0
     else:
         while key:
-            if tek_rank>max_rank:
+            if tek_rank > max_rank:
                 break
-            b=[]
-            k=0
-            new_matrix=[[0 for i in range(tek_rank)] for j in range(tek_rank)]
-            key=0
-            tek_lines=(permutations(range(n1), tek_rank))
-            tek_columns=(permutations(range(m1),tek_rank))
-            bas_tek_lines=[i for i in tek_lines if all(bazed_lines) in i]
-            bas_tek_columns=[i for i in tek_columns if all(bazed_columns) in i]
+            b = []
+            k = 0
+            new_matrix = [[0 for i in range(tek_rank)] for j in range(tek_rank)]
+            key = 0
+            tek_lines = (permutations(range(n1), tek_rank))
+            tek_columns = (permutations(range(m1), tek_rank))
+            bas_tek_lines = [i for i in tek_lines if all(bazed_lines) in i]
+            bas_tek_columns = [i for i in tek_columns if all(bazed_columns) in i]
             for i in bas_tek_lines:
-                if key==1:
+                if key == 1:
                     break
                 for j in bas_tek_columns:
-                    if key==1:
+                    if key == 1:
                         break
                     for line in sorted(list(i)):
-                        if key==1:
+                        if key == 1:
                             break
                         for column in sorted(list(j)):
-                            if key==1:
+                            if key == 1:
                                 break
                             b.append(a[line][column])
                     for x in range(tek_rank):
                         for y in range(tek_rank):
-                            new_matrix[x][y]=b[k]
-                            k+=1
-                    if determinant(new_matrix,tek_rank,tek_rank)!=0:
-                        key=1
-                        tek_rank+=1
-                        rank+=1
+                            new_matrix[x][y] = b[k]
+                            k += 1
+                    if determinant(new_matrix, tek_rank, tek_rank) != 0:
+                        key = 1
+                        tek_rank += 1
+                        rank += 1
                         break
     return rank
 
 
 # Функция сложеня матриц
-def sum_matrix(A, B, n1, m1, n2, m2,chat_id):
+def sum_matrix(A, B, n1, m1, n2, m2, chat_id):
     c = [[0 for i in range(m1)] for j in range(n1)]
     sign = users1[chat_id]['sign']
-    if sign=='-':
+    if sign == '-':
         new_b = [[0 for i in range(m2)] for j in range(n2)]
         for i in range(n2):
             for j in range(m2):
-                new_b[i][j]=-B[i][j]
-        B=new_b
+                new_b[i][j] = -B[i][j]
+        B = new_b
     for i in range(n1):
         for j in range(m1):
             c[i][j] = A[i][j] + B[i][j]
@@ -96,6 +97,7 @@ def sum_matrix(A, B, n1, m1, n2, m2,chat_id):
         s += '\n'
     s = f'<b>{s}</b>'
     bot.send_message(chat_id, s, parse_mode='HTML')
+    time.sleep(1.5)
     markup = types.InlineKeyboardMarkup(row_width=1)
     button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
     button2 = types.InlineKeyboardButton(text="Умножить на число", callback_data=f'button2:{chat_id}')
@@ -162,6 +164,7 @@ def product_matrix(A, B, n1, m1, n2, m2, chat_id):
         s += '\n'
     s = f'<b>{s}</b>'
     bot.send_message(chat_id, s, parse_mode='HTML')
+    time.sleep(1.5)
     users1[chat_id]['state'] = 'idle'
     markup = types.InlineKeyboardMarkup(row_width=1)
     button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
@@ -198,6 +201,7 @@ def matrix_product_number(chat_id):
     s = f'<b>{s}</b>'
     bot.send_message(chat_id, s, parse_mode='HTML')
     users1[chat_id]['state'] = 'idle'
+    time.sleep(1.5)
     markup = types.InlineKeyboardMarkup(row_width=1)
     button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
     button2 = types.InlineKeyboardButton(text="Умножить на число", callback_data=f'button2:{chat_id}')
@@ -248,8 +252,8 @@ def send_broadcast(message):
 def broadcast_message(message):
     chat_id = message.chat.id
     if chat_id == 697156742:  # Проверка, что команду отправляет создатель бота
-        f=open('broadcast.txt', encoding='utf-8')
-        s=f.readline()
+        f = open('broadcast.txt', encoding='utf-8')
+        s = f.readline()
         f.close()
         send_broadcast(s)
     else:
@@ -313,12 +317,11 @@ def help_message(message):
     chat_id = message.chat.id
     creator_chat_id = '697156742'  # Замените на свой chat_id
     if message.text == '/support':
-        bot.send_message(chat_id, "Введите ваш вопрос сразу после команды /support через пробел.")
+        bot.send_message(chat_id, "Введите ваш вопрос:")
+        users1[chat_id]['state'] = 'help'
     elif message.text == 'Написать в поддержку':
-        bot.send_message(chat_id, "Введите ваш вопрос сразу после команды /support через пробел.")
-    else:
-        bot.send_message(creator_chat_id, f'Пользователь {chat_id} запрашивает помощь:\n\n{message.text}')
-        bot.send_message(chat_id, 'Ваш запрос успешно отправлен, в скором времени вы получите ответ.')
+        bot.send_message(chat_id, "Введите ваш вопрос:")
+        users1[chat_id]['state'] = 'help'
 
 
 # Реакция бота на разные сообщения от пользователя
@@ -343,10 +346,14 @@ def message_from_user(message):
         button3 = types.KeyboardButton("Вернуться в главное меню")
         markup.add(button1).row(button2, button3)
         bot.send_message(message.chat.id, 'Что конкретно вас интересует?', reply_markup=markup)
-    elif (message.text=="Что я умею?"):
-        bot.send_message(message.chat.id, 'Привет! Я <b>Matrix_assistant</b> бот и я помогу тебе быстро работать с матрицами. Я могу:\nТранспонировать матрицу\nНайти произведение двух матриц\nНайти сумму двух матриц\nНайти разность двух матриц\nНайти обратную матрицу\nНайти ранг матрицы\nВозвести матрицу в квадрат\nНайти определитель матрицы\nУмножить матрицу на число\nНачнем?', parse_mode='HTML')
+    elif (message.text == "Что я умею?"):
+        bot.send_message(message.chat.id,
+                         'Привет! Я <b>Matrix_assistant</b> бот и я помогу тебе быстро работать с матрицами. Я могу:\nТранспонировать матрицу\nНайти произведение двух матриц\nНайти сумму двух матриц\nНайти разность двух матриц\nНайти обратную матрицу\nНайти ранг матрицы\nВозвести матрицу в квадрат\nНайти определитель матрицы\nУмножить матрицу на число\nНачнем?',
+                         parse_mode='HTML')
     elif (message.text == "Создатели"):
-        bot.send_message(message.chat.id, 'Telegram-bot создали <b>Муслин Артемий</b>, <b>Яшина Нина</b>, <b>Калетурина Полина</b> и <b>Гарин Андрей</b>.\nПроектная работа от 25.10.23', parse_mode='HTML')
+        bot.send_message(message.chat.id,
+                         'Telegram-bot создали <b>Муслин Артемий</b>, <b>Яшина Нина</b>, <b>Калетурина Полина</b> и <b>Гарин Андрей</b>.\nПроектная работа от 25.10.23',
+                         parse_mode='HTML')
     elif (message.text == "Вернуться в главное меню"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
         button1 = types.KeyboardButton("Работа с матрицами")
@@ -374,6 +381,12 @@ def message_from_user(message):
             bot.send_message(chat_id, 'Введите число <b>столбцов</b> матрицы:', parse_mode='HTML')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
+    elif state == 'help':
+        chat_id = message.chat.id
+        creator_chat_id = '697156742'
+        bot.send_message(creator_chat_id, f'Пользователь {chat_id} запрашивает помощь:\n\n{message.text}')
+        bot.send_message(chat_id, 'Ваш запрос успешно отправлен, в скором времени вы получите ответ.')
+        users1[chat_id]['state'] = 'idle'
     elif state == 'waiting_for_number_columns_A':
         try:
             m = int(message.text)
@@ -391,7 +404,7 @@ def message_from_user(message):
                     bot.send_message(chat_id,
                                      '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
                                      parse_mode='HTML')
-            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans' or goal == 'sum_matrix' or goal=='rank':
+            elif goal == 'matrix_product_number' or goal == 'product_matrix' or goal == 'trans' or goal == 'sum_matrix' or goal == 'rank':
                 users1[chat_id]['state'] = 'waiting_for_matrix_A'
                 bot.send_message(chat_id, 'Введите матрицу:')
                 bot.send_message(chat_id,
@@ -452,10 +465,11 @@ def message_from_user(message):
                             bot.send_message(chat_id,
                                              'Обратной матрицы <b>не существует</b>.\nПримечание: ее можно найти если определитель матрицы не равен нулю',
                                              parse_mode='HTML')
-                    elif users1[chat_id]['goal']=='rank':
+                    elif users1[chat_id]['goal'] == 'rank':
                         r = rank(users1[chat_id]['A'], users1[chat_id]['lines_in_A'], users1[chat_id]['columns_in_A'])
-                        users1[chat_id]['state']='idle'
+                        users1[chat_id]['state'] = 'idle'
                         bot.send_message(chat_id, f'Ранг данной матрицы равен: <b>{r}</b>', parse_mode='HTML')
+                        time.sleep(1.5)
                         markup = types.InlineKeyboardMarkup(row_width=1)
                         button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
                         button2 = types.InlineKeyboardButton(text="Умножить на число",
@@ -478,6 +492,7 @@ def message_from_user(message):
                         det = determinant(A, n, m)
                         bot.send_message(chat_id, "Детерминант данной матрицы равен: <b>{:.3f}</b>".format(det),
                                          parse_mode='HTML')
+                        time.sleep(1.5)
                         markup = types.InlineKeyboardMarkup(row_width=1)
                         button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
                         button2 = types.InlineKeyboardButton(text="Умножить на число",
@@ -520,6 +535,7 @@ def message_from_user(message):
                                     s += '  '
                             s += '\n'
                         bot.send_message(chat_id, s)
+                        time.sleep(1.5)
                         markup = types.InlineKeyboardMarkup(row_width=1)
                         button1 = types.InlineKeyboardButton(text="Транспонировать", callback_data=f'button1:{chat_id}')
                         button2 = types.InlineKeyboardButton(text="Умножить на число",
@@ -561,7 +577,8 @@ def message_from_user(message):
                                        users1[chat_id]['columns_in_B'], chat_id)
                     elif users1[chat_id]['goal'] == 'sum_matrix':
                         users1[chat_id]['state'] = 'sign'
-                        bot.send_message(chat_id, 'Введите действие, которое хотите выполнить: <b>+</b> или <b>-</b>', parse_mode='HTML')
+                        bot.send_message(chat_id, 'Введите действие, которое хотите выполнить: <b>+</b> или <b>-</b>',
+                                         parse_mode='HTML')
                 else:
                     bot.send_message(chat_id, 'Неправильный формат данных. Попробуйте ещё раз.')
                     bot.send_message(chat_id,
@@ -592,7 +609,7 @@ def message_from_user(message):
                 else:
                     bot.send_message(chat_id, 'Введите число <b>столбцов</b> этой матрицы:', parse_mode='HTML')
             elif users1[chat_id]['goal'] == 'sum_matrix':
-                if n2!=users1[chat_id]['lines_in_A']:
+                if n2 != users1[chat_id]['lines_in_A']:
                     bot.send_message(chat_id,
                                      'Выполнить действие с этими матрицами <b>невозможно</b>.\nПримечание: размерности матриц должны быть одинаковыми',
                                      parse_mode='HTML')
@@ -611,8 +628,8 @@ def message_from_user(message):
                 bot.send_message(chat_id,
                                  '<b>ВАЖНО!</b>\nОбязательно посмотрите, как нужно вводить данные\nЕсли у вас есть матрица:\n1 2 3\n4 5 6\n7 8 9\nТо введите :"1 2 3 4 5 6 7 8 9"\nТо есть сначала вводите элементы первой строки через пробел, потом второй строки и т.д.',
                                  parse_mode='HTML')
-            elif goal=='sum_matrix':
-                if users1[chat_id]['columns_in_A']!=m2:
+            elif goal == 'sum_matrix':
+                if users1[chat_id]['columns_in_A'] != m2:
                     bot.send_message(chat_id,
                                      'Выполнить действие с этими матрицами <b>невозможно</b>.\nПримечание: размерности матриц должны быть одинаковыми',
                                      parse_mode='HTML')
@@ -624,16 +641,16 @@ def message_from_user(message):
                                      parse_mode='HTML')
         except ValueError:
             bot.send_message(chat_id, 'Неправильный формат числа. Попробуйте ещё раз.')
-    elif state=='sign':
+    elif state == 'sign':
         try:
-            sign=message.text
-            if sign=='+':
+            sign = message.text
+            if sign == '+':
                 users1[chat_id]['sign'] = '+'
                 sum_matrix(users1[chat_id]['A'], users1[chat_id]['B'], users1[chat_id]['lines_in_A'],
-                               users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
-                               users1[chat_id]['columns_in_B'], chat_id)
-                users1[chat_id]['state']='idle'
-            elif sign=='-':
+                           users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
+                           users1[chat_id]['columns_in_B'], chat_id)
+                users1[chat_id]['state'] = 'idle'
+            elif sign == '-':
                 users1[chat_id]['sign'] = '-'
                 sum_matrix(users1[chat_id]['A'], users1[chat_id]['B'], users1[chat_id]['lines_in_A'],
                            users1[chat_id]['columns_in_A'], users1[chat_id]['lines_in_B'],
@@ -750,4 +767,4 @@ def callback_inline(call):
 
 
 # Запуск бота
-bot.polling(none_stop=True, timeout=60)
+bot.polling(none_stop=True)
